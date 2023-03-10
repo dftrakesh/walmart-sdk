@@ -1,108 +1,97 @@
 package io.github.dft.walmartsdk;
 
-import io.github.dft.walmartsdk.constantcode.ConstantCodes;
+import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
-import io.github.dft.walmartsdk.model.itemsapi.ItemWrapper;
-import io.github.dft.walmartsdk.model.itemsapi.ItemsWrapper;
-import io.github.dft.walmartsdk.model.itemsapi.SearchWrapper;
-import io.github.dft.walmartsdk.model.itemsapi.TaxonomyWrapper;
+import io.github.dft.walmartsdk.model.itemsapi.*;
 import lombok.SneakyThrows;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
-
-import static io.github.dft.walmartsdk.constantcode.ConstantCodes.*;
+import java.util.List;
 
 public class ItemsAPI extends WalmartSDK {
+
+    private static final String ITEMS = "items";
+    private static final String SLASH_CHARACTER = "/";
+    private static final String QUESTION_MARK_CHARACTER = "?";
 
     public ItemsAPI(AccessCredential accessCredential) {
         super(accessCredential);
     }
 
     @SneakyThrows
-    public ItemsWrapper getAllItems(HashMap<String, String> params) {
+    public List<ItemResponse> getAllItems() {
 
-        URIBuilder uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(ConstantCodes.SLASH_CHARACTER)
-                .concat(ITEMS)
-                .concat(QUESTION_MARK_CHARACTER));
-        addParameters(uriBuilder, params);
+        HashMap<String, String> params = new HashMap<>();
+        String nextCursor = "*";
+        params.put("limit", "200");
+        params.put("offset", "0");
+        params.put("nextCursor", nextCursor);
 
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, CONTENT_TYPE_VALUE)
-                .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                .build();
+        URI uri = baseurl(ITEMS.concat(QUESTION_MARK_CHARACTER));
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
 
-        return getRequestWrapped(request, ItemsWrapper.class);
+        List<ItemResponse> productList = new ArrayList<>();
+        HttpResponse.BodyHandler<ItemsWrapper> handler = new JsonBodyHandler<>(ItemsWrapper.class);
+        while (nextCursor != null) {
+            ItemsWrapper itemsWrapper = getRequestWrapped(request, handler);
+            nextCursor = itemsWrapper.getNextCursor();
+            productList.addAll(itemsWrapper.getItemResponse());
+        }
+        return productList;
+    }
+
+    @SneakyThrows
+    public ItemsWrapper getItems(HashMap<String, String> params) {
+
+        URI uri = baseurl(ITEMS.concat(QUESTION_MARK_CHARACTER));
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
+
+        HttpResponse.BodyHandler<ItemsWrapper> handler = new JsonBodyHandler<>(ItemsWrapper.class);
+        return getRequestWrapped(request, handler);
     }
 
     @SneakyThrows
     public ItemWrapper getAnItem(String itemId, HashMap<String, String> params) {
 
-        URIBuilder uriBuilder = new URIBuilder(ConstantCodes.API_BASE_END_POINT.concat(ConstantCodes.SLASH_CHARACTER)
-                .concat(ConstantCodes.ITEMS)
-                .concat(ConstantCodes.SLASH_CHARACTER)
+        URI uri = baseurl(ITEMS.concat(SLASH_CHARACTER)
                 .concat(itemId)
                 .concat(QUESTION_MARK_CHARACTER));
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
 
-        addParameters(uriBuilder, params);
-
-
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, ConstantCodes.CONTENT_TYPE_VALUE)
-                .headers(ConstantCodes.ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(ConstantCodes.SERVICE_NAME, ConstantCodes.SERVICE_NAME_VALUE)
-                .headers(ConstantCodes.CORRELATION_ID, ConstantCodes.CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, ItemWrapper.class);
+        HttpResponse.BodyHandler<ItemWrapper> handler = new JsonBodyHandler<>(ItemWrapper.class);
+        return getRequestWrapped(request, handler);
     }
 
     @SneakyThrows
     public SearchWrapper getItemSearch(HashMap<String, String> params) {
 
-        URIBuilder uriBuilder = new URIBuilder(ConstantCodes.API_BASE_END_POINT.concat(ConstantCodes.SLASH_CHARACTER)
-                .concat(ConstantCodes.ITEMS)
-                .concat(ConstantCodes.SLASH_CHARACTER)
-                .concat(ConstantCodes.WALMART)
-                .concat(ConstantCodes.SLASH_CHARACTER)
-                .concat(ConstantCodes.SEARCH)
-                .concat(ConstantCodes.QUESTION_MARK_CHARACTER));
+        URI uri = baseurl(ITEMS.concat(SLASH_CHARACTER)
+                .concat("walmart")
+                .concat(SLASH_CHARACTER)
+                .concat("search")
+                .concat(QUESTION_MARK_CHARACTER));
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
 
-        addParameters(uriBuilder, params);
-
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, ConstantCodes.CONTENT_TYPE_VALUE)
-                .headers(ConstantCodes.ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(ConstantCodes.SERVICE_NAME, ConstantCodes.SERVICE_NAME_VALUE)
-                .headers(ConstantCodes.CORRELATION_ID, ConstantCodes.CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, SearchWrapper.class);
+        HttpResponse.BodyHandler<SearchWrapper> handler = new JsonBodyHandler<>(SearchWrapper.class);
+        return getRequestWrapped(request, handler);
     }
 
     @SneakyThrows
     public TaxonomyWrapper getTaxonomy() {
 
-        URIBuilder uriBuilder = new URIBuilder(ConstantCodes.API_BASE_END_POINT.concat(ConstantCodes.SLASH_CHARACTER)
-                .concat(ConstantCodes.ITEMS)
-                .concat(ConstantCodes.SLASH_CHARACTER)
+        URI uri = baseurl(ITEMS.concat(SLASH_CHARACTER)
                 .concat("taxonomy"));
+        HttpRequest request = get(uri);
 
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, ConstantCodes.CONTENT_TYPE_VALUE)
-                .headers(ConstantCodes.ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(ConstantCodes.SERVICE_NAME, ConstantCodes.SERVICE_NAME_VALUE)
-                .headers(ConstantCodes.CORRELATION_ID, ConstantCodes.CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, TaxonomyWrapper.class);
+        HttpResponse.BodyHandler<TaxonomyWrapper> handler = new JsonBodyHandler<>(TaxonomyWrapper.class);
+        return getRequestWrapped(request, handler);
     }
 }
