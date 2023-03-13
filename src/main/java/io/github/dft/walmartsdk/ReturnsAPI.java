@@ -1,14 +1,14 @@
 package io.github.dft.walmartsdk;
 
+import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
 import io.github.dft.walmartsdk.model.returnsapi.ReturnWrapper;
 import lombok.SneakyThrows;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
 import java.net.http.HttpRequest;
-
-import static io.github.dft.walmartsdk.constantcode.ConstantCodes.*;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
 
 public class ReturnsAPI extends WalmartSDK {
 
@@ -17,19 +17,13 @@ public class ReturnsAPI extends WalmartSDK {
     }
 
     @SneakyThrows
-    public ReturnWrapper getReturnOrder() {
+    public ReturnWrapper getReturnOrder(HashMap<String, String> params) {
 
-        URIBuilder uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(SLASH_CHARACTER)
-                .concat("returns"));
+        URI uri = baseurl("returns");
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
 
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_VALUE)
-                .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, ReturnWrapper.class);
+        HttpResponse.BodyHandler<ReturnWrapper> handler = new JsonBodyHandler<>(ReturnWrapper.class);
+        return getRequestWrapped(request, handler);
     }
 }
