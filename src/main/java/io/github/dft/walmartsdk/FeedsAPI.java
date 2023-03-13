@@ -1,57 +1,44 @@
 package io.github.dft.walmartsdk;
 
+import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
 import io.github.dft.walmartsdk.model.feedsapi.FeedItemWrapper;
 import io.github.dft.walmartsdk.model.feedsapi.FeedWrapper;
 import lombok.SneakyThrows;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
 import java.net.http.HttpRequest;
-
-import static io.github.dft.walmartsdk.constantcode.ConstantCodes.*;
-
+import java.net.http.HttpResponse;
+import java.util.HashMap;
 
 public class FeedsAPI extends WalmartSDK {
+
+    private static final String FEEDS = "feeds";
+    private static final String SLASH_CHARACTER = "/";
 
     public FeedsAPI(AccessCredential accessCredential) {
         super(accessCredential);
     }
 
     @SneakyThrows
-    public FeedWrapper getAllFeedStatuses() {
+    public FeedWrapper getAllFeedStatuses(HashMap<String, String> params) {
 
-        URIBuilder uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(SLASH_CHARACTER)
-                .concat(FEEDS));
+        URI uri = baseurl(FEEDS);
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
 
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, CONTENT_TYPE_VALUE)
-                .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, FeedWrapper.class);
+        HttpResponse.BodyHandler<FeedWrapper> handler = new JsonBodyHandler<>(FeedWrapper.class);
+        return getRequestWrapped(request, handler);
     }
 
     @SneakyThrows
-    public FeedItemWrapper getFeedItemStatus(String feedId) {
+    public FeedItemWrapper getFeedItemStatus(String feedId, HashMap<String, String> params) {
 
-        URIBuilder uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(SLASH_CHARACTER)
-                .concat(FEEDS)
-                .concat(SLASH_CHARACTER)
-                .concat(feedId));
+        URI uri = baseurl(FEEDS.concat(SLASH_CHARACTER).concat(feedId));
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
 
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, CONTENT_TYPE_VALUE)
-                .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, FeedItemWrapper.class);
+        HttpResponse.BodyHandler<FeedItemWrapper> handler = new JsonBodyHandler<>(FeedItemWrapper.class);
+        return getRequestWrapped(request, handler);
     }
-
 }

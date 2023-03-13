@@ -1,20 +1,22 @@
 package io.github.dft.walmartsdk;
 
+import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
 import io.github.dft.walmartsdk.model.ordersapi.Order;
 import io.github.dft.walmartsdk.model.ordersapi.OrderWrapper;
 import io.github.dft.walmartsdk.model.ordersapi.OrdersWrapper;
 import lombok.SneakyThrows;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.dft.walmartsdk.constantcode.ConstantCodes.*;
-
 public class OrdersAPI extends WalmartSDK {
+
+    private static final String ORDERS = "orders";
+    private static final String SLASH_CHARACTER = "/";
 
     public OrdersAPI(AccessCredential accessCredential) {
         super(accessCredential);
@@ -22,27 +24,18 @@ public class OrdersAPI extends WalmartSDK {
 
     @SneakyThrows
     public List<Order> getAllOrders() {
-        URIBuilder uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(SLASH_CHARACTER)
-                .concat(ORDERS));
+        URI uri = baseurl(ORDERS);
         String nextCursor = null;
-
         List<Order> orderList = new ArrayList<>();
 
         do {
             if (nextCursor != null) {
-                uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(SLASH_CHARACTER)
-                        .concat(ORDERS)
-                        .concat(nextCursor));
+                uri = baseurl(ORDERS.concat(nextCursor));
             }
-            HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                    .GET()
-                    .header(HttpHeaders.ACCEPT, CONTENT_TYPE_VALUE)
-                    .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                    .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                    .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                    .build();
+            HttpRequest request = get(uri);
 
-            OrdersWrapper wrapper = getRequestWrapped(request, OrdersWrapper.class);
+            HttpResponse.BodyHandler<OrdersWrapper> handler = new JsonBodyHandler<>(OrdersWrapper.class);
+            OrdersWrapper wrapper = getRequestWrapped(request, handler);
             orderList.addAll(wrapper.getList().getElements().getOrder());
             nextCursor = wrapper.getList().getMeta().getNextCursor();
         } while (nextCursor != null);
@@ -53,39 +46,22 @@ public class OrdersAPI extends WalmartSDK {
     @SneakyThrows
     public OrderWrapper getAnOrder(String purchaseOrderId) {
 
-        URIBuilder uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(SLASH_CHARACTER)
-                .concat(ORDERS)
-                .concat(SLASH_CHARACTER)
+        URI uri = baseurl(ORDERS.concat(SLASH_CHARACTER)
                 .concat(purchaseOrderId));
+        HttpRequest request = get(uri);
 
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, CONTENT_TYPE_VALUE)
-                .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, OrderWrapper.class);
+        HttpResponse.BodyHandler<OrderWrapper> handler = new JsonBodyHandler<>(OrderWrapper.class);
+        return getRequestWrapped(request, handler);
     }
 
     @SneakyThrows
     public OrdersWrapper getAllReleasedOrders() {
 
-        URIBuilder uriBuilder = new URIBuilder(API_BASE_END_POINT.concat(SLASH_CHARACTER)
-                .concat(ORDERS)
-                .concat(SLASH_CHARACTER)
+        URI uri = baseurl(ORDERS.concat(SLASH_CHARACTER)
                 .concat("released"));
+        HttpRequest request = get(uri);
 
-        HttpRequest request = HttpRequest.newBuilder(uriBuilder.build())
-                .GET()
-                .header(HttpHeaders.ACCEPT, CONTENT_TYPE_VALUE)
-                .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                .build();
-
-        return getRequestWrapped(request, OrdersWrapper.class);
+        HttpResponse.BodyHandler<OrdersWrapper> handler = new JsonBodyHandler<>(OrdersWrapper.class);
+        return getRequestWrapped(request, handler);
     }
-
 }
