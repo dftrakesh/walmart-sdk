@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@Builder(builderMethodName = "newBuilder",toBuilder = true)
 public class WalmartSDK {
 
     protected HttpClient client;
@@ -42,6 +42,14 @@ public class WalmartSDK {
     public WalmartSDK(AccessCredential accessCredential) {
         client = HttpClient.newHttpClient();
         this.accessCredential = accessCredential;
+    }
+
+    public ItemsAPI getItemsAPI(){
+        return new ItemsAPI(accessCredential);
+    }
+
+    public OrdersAPI getOrdersAPI(){
+        return new OrdersAPI(accessCredential);
     }
 
     @SneakyThrows
