@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@Builder(builderMethodName = "newBuilder", toBuilder = true)
 public class WalmartSDK {
 
     protected HttpClient client;
