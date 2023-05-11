@@ -7,10 +7,8 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Item {
+public class Weight {
 
-    private String productName;
-    private String sku;
-    private String imageUrl;
-    private Weight weight;
+    private String value;
+    private String unit;
 }
