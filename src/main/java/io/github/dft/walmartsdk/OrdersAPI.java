@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class OrdersAPI extends WalmartSDK {
@@ -23,14 +24,16 @@ public class OrdersAPI extends WalmartSDK {
     }
 
     @SneakyThrows
-    public List<Order> getAllOrders() {
+    public List<Order> getAllOrders(HashMap<String, String> params) {
         URI uri = baseurl(ORDERS);
+        uri = addParameters(uri, params);
         String nextCursor = null;
         List<Order> orderList = new ArrayList<>();
 
         do {
             if (nextCursor != null) {
                 uri = baseurl(ORDERS.concat(nextCursor));
+                uri = addParameters(uri, params);
             }
             HttpRequest request = get(uri);
 
@@ -44,10 +47,11 @@ public class OrdersAPI extends WalmartSDK {
     }
 
     @SneakyThrows
-    public OrderWrapper getAnOrder(String purchaseOrderId) {
+    public OrderWrapper getAnOrder(String purchaseOrderId, HashMap<String, String> params) {
 
         URI uri = baseurl(ORDERS.concat(SLASH_CHARACTER)
                 .concat(purchaseOrderId));
+        uri = addParameters(uri, params);
         HttpRequest request = get(uri);
 
         HttpResponse.BodyHandler<OrderWrapper> handler = new JsonBodyHandler<>(OrderWrapper.class);
