@@ -1,12 +1,14 @@
 package io.github.dft.walmartsdk;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
 import io.github.dft.walmartsdk.model.authenticationapi.AccessTokenResponse;
+import io.github.dft.walmartsdk.model.common.RequestBody;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.SneakyThrows;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -29,6 +31,10 @@ public class WalmartSDK {
     private static final String ACCEPT = "Accept";
     private static final String SLASH_CHARACTER = "/";
     private static final String SERVICE_NAME = "WM_SVC.NAME";
+    private static final String HTTP_METHOD_TYPE_GET = "GET";
+    private static final String HTTP_METHOD_TYPE_PUT = "PUT";
+    private static final String HTTP_METHOD_TYPE_POST = "POST";
+    private static final String HTTP_METHOD_TYPE_DELETE = "DELETE";
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String ACCESS_TOKEN = "WM_SEC.ACCESS_TOKEN";
     private static final String CONTENT_TYPE_VALUE = "application/json";
@@ -108,12 +114,36 @@ public class WalmartSDK {
 
     @SneakyThrows
     protected HttpRequest get(URI uri) {
+        return getHttpRequest(uri, HTTP_METHOD_TYPE_GET, null);
+    }
+
+    @SneakyThrows
+    protected HttpRequest put(URI uri, RequestBody body) {
+        String jsonBody = getJsonBody(body);
+        return getHttpRequest(uri, HTTP_METHOD_TYPE_PUT, jsonBody);
+    }
+
+    @SneakyThrows
+    protected HttpRequest post(URI uri, RequestBody body) {
+        String jsonBody = getJsonBody(body);
+        return getHttpRequest(uri, HTTP_METHOD_TYPE_POST, jsonBody);
+    }
+
+    private HttpRequest getHttpRequest(URI uri, String method, String requestBody) {
         return HttpRequest.newBuilder(uri)
-                .header(ACCEPT, CONTENT_TYPE_VALUE)
-                .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
-                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
-                .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
-                .GET()
-                .build();
+            .header(ACCEPT, CONTENT_TYPE_VALUE)
+            .headers(ACCESS_TOKEN, accessCredential.getAccessToken())
+            .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
+            .headers(CORRELATION_ID, CORRELATION_ID_VALUE)
+            .method(method, (method.equals(HTTP_METHOD_TYPE_GET) || method.equals(HTTP_METHOD_TYPE_DELETE)) ? HttpRequest.BodyPublishers.noBody() :
+                                                                                                              HttpRequest.BodyPublishers.ofString(requestBody))
+            .build();
+    }
+
+    @SneakyThrows
+    private String getJsonBody(RequestBody body) {
+        String jsonBody = new ObjectMapper().enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+                                            .writeValueAsString(body);
+        return jsonBody;
     }
 }
