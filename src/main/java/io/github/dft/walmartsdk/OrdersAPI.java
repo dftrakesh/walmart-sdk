@@ -1,7 +1,7 @@
 package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.ordersapi.Order;
 import io.github.dft.walmartsdk.model.ordersapi.OrderWrapper;
 import io.github.dft.walmartsdk.model.ordersapi.OrdersWrapper;
@@ -19,8 +19,8 @@ public class OrdersAPI extends WalmartSDK {
     private static final String ORDERS = "orders";
     private static final String SLASH_CHARACTER = "/";
 
-    public OrdersAPI(AccessCredential accessCredential) {
-        super(accessCredential);
+    public OrdersAPI(WalmartCredentials walmartCredentials) {
+        super(walmartCredentials);
     }
 
     @SneakyThrows

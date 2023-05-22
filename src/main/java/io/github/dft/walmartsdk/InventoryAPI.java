@@ -1,7 +1,7 @@
 package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.inventoryapi.InventoryWrapper;
 import io.github.dft.walmartsdk.model.inventoryapi.MultiItemInventory;
 import io.github.dft.walmartsdk.model.inventoryapi.SingleItemInventory;
@@ -20,8 +20,8 @@ public class InventoryAPI extends WalmartSDK {
     private static final String INVENTORIES = "inventories";
     private static final String QUESTION_MARK_CHARACTER = "?";
 
-    public InventoryAPI(AccessCredential accessCredential) {
-        super(accessCredential);
+    public InventoryAPI(WalmartCredentials walmartCredentials) {
+        super(walmartCredentials);
     }
 
     @SneakyThrows

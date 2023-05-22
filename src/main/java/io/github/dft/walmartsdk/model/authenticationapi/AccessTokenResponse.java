@@ -7,10 +7,8 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class AccessTokenResponse {
-    private String expireAt;
-    private String issuedAt;
-    private Boolean isValid;
-    private Scopes scopes;
+    private String accessToken;
+    private String tokenType;
+    private Integer expiresIn;
 }

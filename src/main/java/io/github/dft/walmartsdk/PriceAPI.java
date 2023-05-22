@@ -1,7 +1,7 @@
 package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.priceapi.ItemPriceResponseWrapper;
 import io.github.dft.walmartsdk.model.priceapi.PriceRequest;
 import java.net.URI;
@@ -12,8 +12,8 @@ public class PriceAPI extends WalmartSDK {
 
     private static final String PRICE = "price";
 
-    public PriceAPI(AccessCredential accessCredential) {
-        super(accessCredential);
+    public PriceAPI(WalmartCredentials walmartCredentials) {
+        super(walmartCredentials);
     }
 
     public ItemPriceResponseWrapper updatePrice(PriceRequest priceRequest) {
