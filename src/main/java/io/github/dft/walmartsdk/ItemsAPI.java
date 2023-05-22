@@ -1,7 +1,7 @@
 package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.itemsapi.*;
 import lombok.SneakyThrows;
 
@@ -18,8 +18,8 @@ public class ItemsAPI extends WalmartSDK {
     private static final String SLASH_CHARACTER = "/";
     private static final String QUESTION_MARK_CHARACTER = "?";
 
-    public ItemsAPI(AccessCredential accessCredential) {
-        super(accessCredential);
+    public ItemsAPI(WalmartCredentials walmartCredentials) {
+        super(walmartCredentials);
     }
 
     @SneakyThrows

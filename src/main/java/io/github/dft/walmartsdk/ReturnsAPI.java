@@ -1,7 +1,7 @@
 package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.returnsapi.ReturnWrapper;
 import lombok.SneakyThrows;
 
@@ -12,8 +12,8 @@ import java.util.HashMap;
 
 public class ReturnsAPI extends WalmartSDK {
 
-    public ReturnsAPI(AccessCredential accessCredential) {
-        super(accessCredential);
+    public ReturnsAPI(WalmartCredentials walmartCredentials) {
+        super(walmartCredentials);
     }
 
     @SneakyThrows

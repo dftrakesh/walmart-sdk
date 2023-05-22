@@ -1,7 +1,7 @@
 package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.lagtimeapi.LagTime;
 import lombok.SneakyThrows;
 
@@ -14,8 +14,8 @@ public class LagTimeAPI extends WalmartSDK {
 
     private static final String QUESTION_MARK_CHARACTER = "?";
 
-    public LagTimeAPI(AccessCredential accessCredential) {
-        super(accessCredential);
+    public LagTimeAPI(WalmartCredentials walmartCredentials) {
+        super(walmartCredentials);
     }
 
     @SneakyThrows

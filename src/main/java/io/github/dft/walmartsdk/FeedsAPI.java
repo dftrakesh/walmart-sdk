@@ -1,7 +1,7 @@
 package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.AccessCredential;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.feedsapi.FeedItemWrapper;
 import io.github.dft.walmartsdk.model.feedsapi.FeedWrapper;
 import lombok.SneakyThrows;
@@ -16,8 +16,8 @@ public class FeedsAPI extends WalmartSDK {
     private static final String FEEDS = "feeds";
     private static final String SLASH_CHARACTER = "/";
 
-    public FeedsAPI(AccessCredential accessCredential) {
-        super(accessCredential);
+    public FeedsAPI(WalmartCredentials walmartCredentials) {
+        super(walmartCredentials);
     }
 
     @SneakyThrows
