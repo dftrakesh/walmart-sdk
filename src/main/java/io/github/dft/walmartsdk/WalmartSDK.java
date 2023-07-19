@@ -48,6 +48,7 @@ public class WalmartSDK {
     private static final String FORM_BODY = "grant_type=client_credentials";
     private static final String CORRELATION_ID = "WM_QOS.CORRELATION_ID";
     private static final String SERVICE_NAME_VALUE = "Walmart Service Name";
+    private static final String HEADER_WM_SEC_ACCESS_TOKEN = "WM_SEC.ACCESS_TOKEN";
     private static final String CORRELATION_ID_VALUE = "b3261d2d-028a-4ef7-8602-633c23200af5";
     private static final String API_BASE_END_POINT = "https://marketplace.walmartapis.com/v3";
     private static final String WALMART_TOKEN_ENDPOINT = "https://marketplace.walmartapis.com/v3/token";
@@ -142,9 +143,17 @@ public class WalmartSDK {
     }
 
     @SneakyThrows
-    protected HttpRequest post(URI uri, RequestBody body) {
-        String jsonBody = getJsonBody(body);
-        return getHttpRequest(uri, HTTP_METHOD_TYPE_POST, jsonBody);
+    protected HttpRequest post(URI uri, String jsonBody) {
+        refreshAccessToken();
+
+        return HttpRequest.newBuilder(uri)
+                .header(HEADER_WM_SEC_ACCESS_TOKEN, walmartCredentials.getAccessToken())
+                .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
+                .headers(CORRELATION_ID, UUID.randomUUID().toString())
+                .header(ACCEPT, CONTENT_TYPE_VALUE)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
     }
 
     private HttpRequest getHttpRequest(URI uri, String method, String requestBody) {
