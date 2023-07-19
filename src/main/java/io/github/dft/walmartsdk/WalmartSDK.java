@@ -14,8 +14,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor
@@ -40,11 +42,16 @@ public class WalmartSDK {
     private static final String HTTP_HEADER_VALUE_APPLICATION_FORM_URL_ENCODED = "application/x-www-form-urlencoded";
     private static final String ACCESS_TOKEN = "WM_SEC.ACCESS_TOKEN";
     private static final String CONTENT_TYPE_VALUE = "application/json";
+    private static final String COLON = ":";
+    private static final String BASIC_AUTH_PREFIX = "Basic ";
+    private static final String HEADER_AUTHORIZATION = "Authorization";
+    private static final String FORM_BODY = "grant_type=client_credentials";
     private static final String CORRELATION_ID = "WM_QOS.CORRELATION_ID";
     private static final String SERVICE_NAME_VALUE = "Walmart Service Name";
+    private static final String HEADER_WM_SEC_ACCESS_TOKEN = "WM_SEC.ACCESS_TOKEN";
     private static final String CORRELATION_ID_VALUE = "b3261d2d-028a-4ef7-8602-633c23200af5";
     private static final String API_BASE_END_POINT = "https://marketplace.walmartapis.com/v3";
-    private static final String OAUTH_BASE_END_POINT = "https://marketplace.walmartapis.com/v3/token";
+    private static final String WALMART_TOKEN_ENDPOINT = "https://marketplace.walmartapis.com/v3/token";
 
     @SneakyThrows
     public WalmartSDK(WalmartCredentials walmartCredentials) {
@@ -77,18 +84,27 @@ public class WalmartSDK {
 
     @SneakyThrows
     protected void refreshAccessToken() {
-        if (walmartCredentials.getAccessToken() == null || walmartCredentials.getExpiresIn() == null
-                                                      || LocalDateTime.now().isAfter(walmartCredentials.getExpiresIn())) {
-            String requestBody = "grant_type=client_credentials";
-            URI uri = new URI(OAUTH_BASE_END_POINT);
-            HttpRequest request = HttpRequest.newBuilder(uri)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .header(CONTENT_TYPE, HTTP_HEADER_VALUE_APPLICATION_FORM_URL_ENCODED)
-                    .build();
+        if (walmartCredentials.getAccessToken() == null || walmartCredentials.getExpiresIn() == null || LocalDateTime.now().isAfter(walmartCredentials.getExpiresIn())) {
+
+            String credential = walmartCredentials.getClientId() + COLON + walmartCredentials.getClientSecret();
+            String authorization = BASIC_AUTH_PREFIX + Base64.getEncoder()
+                                                             .encodeToString(credential.getBytes());
+
+            HttpRequest request = HttpRequest.newBuilder(URI.create(WALMART_TOKEN_ENDPOINT))
+                                             .header(HEADER_AUTHORIZATION, authorization)
+                                             .header(CONTENT_TYPE, HTTP_HEADER_VALUE_APPLICATION_FORM_URL_ENCODED)
+                                             .header(ACCEPT, CONTENT_TYPE_VALUE)
+                                             .header(CORRELATION_ID, UUID.randomUUID().toString())
+                                             .header(SERVICE_NAME, SERVICE_NAME_VALUE)
+                                             .POST(HttpRequest.BodyPublishers.ofString(FORM_BODY))
+                                             .build();
+
             HttpResponse.BodyHandler<AccessTokenResponse> handler = new JsonBodyHandler<>(AccessTokenResponse.class);
             AccessTokenResponse accessTokenResponse = getRequestWrapped(request, handler);
+
             walmartCredentials.setAccessToken(accessTokenResponse.getAccessToken());
-            walmartCredentials.setExpiresIn(LocalDateTime.now().plusSeconds(accessTokenResponse.getExpiresIn())); //900 sec
+            walmartCredentials.setTokenType(accessTokenResponse.getTokenType());
+            walmartCredentials.setExpiresIn(LocalDateTime.now().plusSeconds(accessTokenResponse.getExpiresIn()));
         }
     }
 
@@ -127,12 +143,21 @@ public class WalmartSDK {
     }
 
     @SneakyThrows
-    protected HttpRequest post(URI uri, RequestBody body) {
-        String jsonBody = getJsonBody(body);
-        return getHttpRequest(uri, HTTP_METHOD_TYPE_POST, jsonBody);
+    protected HttpRequest post(URI uri, String jsonBody) {
+        refreshAccessToken();
+
+        return HttpRequest.newBuilder(uri)
+                .header(HEADER_WM_SEC_ACCESS_TOKEN, walmartCredentials.getAccessToken())
+                .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
+                .headers(CORRELATION_ID, UUID.randomUUID().toString())
+                .header(ACCEPT, CONTENT_TYPE_VALUE)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
     }
 
     private HttpRequest getHttpRequest(URI uri, String method, String requestBody) {
+        refreshAccessToken();
         return HttpRequest.newBuilder(uri)
             .header(ACCEPT, CONTENT_TYPE_VALUE)
             .headers(ACCESS_TOKEN, walmartCredentials.getAccessToken())

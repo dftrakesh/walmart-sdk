@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class WalmartCredentials {
+    private String clientId;
+    private String clientSecret;
     private String accessToken;
     private String tokenType;
     private LocalDateTime expiresIn;
