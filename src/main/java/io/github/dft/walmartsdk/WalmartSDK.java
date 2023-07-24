@@ -25,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 public class WalmartSDK {
 
     protected HttpClient client;
+    protected ObjectMapper objectMapper;
     protected WalmartCredentials walmartCredentials;
 
     private static final int MAX_ATTEMPTS = 50;
@@ -56,6 +57,7 @@ public class WalmartSDK {
     @SneakyThrows
     public WalmartSDK(WalmartCredentials walmartCredentials) {
         client = HttpClient.newHttpClient();
+        this.objectMapper = new ObjectMapper();
         this.walmartCredentials = walmartCredentials;
     }
 
@@ -173,5 +175,10 @@ public class WalmartSDK {
         String jsonBody = new ObjectMapper().enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
                                             .writeValueAsString(body);
         return jsonBody;
+    }
+
+    @SneakyThrows
+    protected String getString(Object body) {
+        return objectMapper.writeValueAsString(body);
     }
 }
