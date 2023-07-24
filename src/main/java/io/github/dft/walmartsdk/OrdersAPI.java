@@ -3,8 +3,10 @@ package io.github.dft.walmartsdk;
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.ordersapi.Order;
+import io.github.dft.walmartsdk.model.shipapi.OrderShipmentRequest;
 import io.github.dft.walmartsdk.model.ordersapi.OrderWrapper;
 import io.github.dft.walmartsdk.model.ordersapi.OrdersWrapper;
+import io.github.dft.walmartsdk.model.shipapi.OrderShipmentResponse;
 import lombok.SneakyThrows;
 
 import java.net.URI;
@@ -66,6 +68,16 @@ public class OrdersAPI extends WalmartSDK {
         HttpRequest request = get(uri);
 
         HttpResponse.BodyHandler<OrdersWrapper> handler = new JsonBodyHandler<>(OrdersWrapper.class);
+        return getRequestWrapped(request, handler);
+    }
+
+    @SneakyThrows
+    public OrderShipmentResponse shipOrderLines(String purchaseOrderId, OrderShipmentRequest orderShipmentRequest) {
+
+        URI uri = baseurl(ORDERS + "/" + purchaseOrderId + "/shipping");
+        HttpRequest request = post(uri, getString(orderShipmentRequest));
+
+        HttpResponse.BodyHandler<OrderShipmentResponse> handler = new JsonBodyHandler<>(OrderShipmentResponse.class);
         return getRequestWrapped(request, handler);
     }
 }

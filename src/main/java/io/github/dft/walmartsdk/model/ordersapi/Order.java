@@ -12,6 +12,7 @@ public class Order {
     private String purchaseOrderId;
     private String customerOrderId;
     private String customerEmailId;
+    private String sellerOrderId;
     private String orderType;
     private String originalCustomerOrderID;
     private Long orderDate;
