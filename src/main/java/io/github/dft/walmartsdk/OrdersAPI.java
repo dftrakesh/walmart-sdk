@@ -69,15 +69,16 @@ public class OrdersAPI extends WalmartSDK {
         List<Order> orderList = new ArrayList<>();
 
         do {
-            if (nextCursor != null) {
-                uri = baseurl(ORDERS + SLASH_CHARACTER + RELEASED + nextCursor);
-                uri = addParameters(uri, params);
-            }
             HttpRequest request = get(uri);
             HttpResponse.BodyHandler<OrdersWrapper> handler = new JsonBodyHandler<>(OrdersWrapper.class);
             OrdersWrapper wrapper = getRequestWrapped(request, handler);
             orderList.addAll(wrapper.getList().getElements().getOrder());
             nextCursor = wrapper.getList().getMeta().getNextCursor();
+
+            if (nextCursor != null) {
+                uri = baseurl(ORDERS + SLASH_CHARACTER + RELEASED + nextCursor);
+                uri = addParameters(uri, params);
+            }
         } while (nextCursor != null);
 
         return orderList;
