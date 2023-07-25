@@ -2,6 +2,7 @@ package io.github.dft.walmartsdk.model.shipapi;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.github.dft.walmartsdk.model.common.Errors;
 import io.github.dft.walmartsdk.model.ordersapi.Order;
 import lombok.Data;
 
@@ -11,4 +12,5 @@ import lombok.Data;
 public class OrderShipmentResponse {
 
     private Order order;
+    private Errors errors;
 }
