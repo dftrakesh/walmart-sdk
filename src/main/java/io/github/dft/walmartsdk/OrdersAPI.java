@@ -19,6 +19,7 @@ import java.util.List;
 public class OrdersAPI extends WalmartSDK {
 
     private static final String ORDERS = "orders";
+    private static final String RELEASED = "released";
     private static final String SLASH_CHARACTER = "/";
 
     public OrdersAPI(WalmartCredentials walmartCredentials) {
@@ -61,14 +62,25 @@ public class OrdersAPI extends WalmartSDK {
     }
 
     @SneakyThrows
-    public OrdersWrapper getAllReleasedOrders() {
+    public List<Order> getAllReleasedOrders(HashMap<String, String> params) {
+        URI uri = baseurl(ORDERS + SLASH_CHARACTER + RELEASED);
+        uri = addParameters(uri, params);
+        String nextCursor = null;
+        List<Order> orderList = new ArrayList<>();
 
-        URI uri = baseurl(ORDERS.concat(SLASH_CHARACTER)
-                .concat("released"));
-        HttpRequest request = get(uri);
+        do {
+            if (nextCursor != null) {
+                uri = baseurl(ORDERS + SLASH_CHARACTER + RELEASED + nextCursor);
+                uri = addParameters(uri, params);
+            }
+            HttpRequest request = get(uri);
+            HttpResponse.BodyHandler<OrdersWrapper> handler = new JsonBodyHandler<>(OrdersWrapper.class);
+            OrdersWrapper wrapper = getRequestWrapped(request, handler);
+            orderList.addAll(wrapper.getList().getElements().getOrder());
+            nextCursor = wrapper.getList().getMeta().getNextCursor();
+        } while (nextCursor != null);
 
-        HttpResponse.BodyHandler<OrdersWrapper> handler = new JsonBodyHandler<>(OrdersWrapper.class);
-        return getRequestWrapped(request, handler);
+        return orderList;
     }
 
     @SneakyThrows
