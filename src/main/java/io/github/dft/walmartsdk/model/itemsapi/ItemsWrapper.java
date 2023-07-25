@@ -3,6 +3,7 @@ package io.github.dft.walmartsdk.model.itemsapi;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.dft.walmartsdk.model.common.Errors;
 import lombok.Data;
 
 import java.util.List;
@@ -16,4 +17,5 @@ public class ItemsWrapper {
     private List<ItemResponse> ItemResponse;
     private Integer totalItems;
     private String nextCursor;
+    private Errors errors;
 }
