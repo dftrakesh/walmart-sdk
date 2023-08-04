@@ -17,4 +17,5 @@ public class OrderLine {
     private OrderLineStatuses orderLineStatuses;
     private Fulfillment fulfillment;
     private Object refund;
+    private String intentToCancel;
 }
