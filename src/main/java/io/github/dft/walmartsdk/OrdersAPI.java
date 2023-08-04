@@ -93,14 +93,4 @@ public class OrdersAPI extends WalmartSDK {
         HttpResponse.BodyHandler<OrderShipmentResponse> handler = new JsonBodyHandler<>(OrderShipmentResponse.class);
         return getRequestWrapped(request, handler);
     }
-
-    @SneakyThrows
-    public OrderWrapper acknowledgeOrder(String purchaseOrderId) {
-
-        URI uri = baseurl(ORDERS + "/" + purchaseOrderId + "/acknowledge");
-        HttpRequest request = post(uri, getString(""));
-
-        HttpResponse.BodyHandler<OrderWrapper> handler = new JsonBodyHandler<>(OrderWrapper.class);
-        return getRequestWrapped(request, handler);
-    }
 }
