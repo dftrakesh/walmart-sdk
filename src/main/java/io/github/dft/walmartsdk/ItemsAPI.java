@@ -2,16 +2,15 @@ package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
-import io.github.dft.walmartsdk.model.itemsapi.ItemWrapper;
-import io.github.dft.walmartsdk.model.itemsapi.ItemsWrapper;
-import io.github.dft.walmartsdk.model.itemsapi.SearchWrapper;
-import io.github.dft.walmartsdk.model.itemsapi.TaxonomyWrapper;
+import io.github.dft.walmartsdk.model.itemsapi.*;
 import lombok.SneakyThrows;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ItemsAPI extends WalmartSDK {
 
@@ -21,6 +20,29 @@ public class ItemsAPI extends WalmartSDK {
 
     public ItemsAPI(WalmartCredentials walmartCredentials) {
         super(walmartCredentials);
+    }
+
+    @SneakyThrows
+    public List<ItemResponse> getAllItems() {
+
+        HashMap<String, String> params = new HashMap<>();
+        String nextCursor = "*";
+        params.put("limit", "200");
+        params.put("offset", "0");
+        params.put("nextCursor", nextCursor);
+
+        URI uri = baseurl(ITEMS.concat(QUESTION_MARK_CHARACTER));
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
+
+        List<ItemResponse> productList = new ArrayList<>();
+        HttpResponse.BodyHandler<ItemsWrapper> handler = new JsonBodyHandler<>(ItemsWrapper.class);
+        while (nextCursor != null) {
+            ItemsWrapper itemsWrapper = getRequestWrapped(request, handler);
+            nextCursor = itemsWrapper.getNextCursor();
+            productList.addAll(itemsWrapper.getItemResponse());
+        }
+        return productList;
     }
 
     public ItemsWrapper getAllItems(HashMap<String, String> params) {
