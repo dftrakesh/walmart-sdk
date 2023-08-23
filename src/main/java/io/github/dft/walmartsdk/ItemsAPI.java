@@ -45,16 +45,6 @@ public class ItemsAPI extends WalmartSDK {
         return productList;
     }
 
-    public ItemsWrapper getAllItems(HashMap<String, String> params) {
-
-        URI uri = baseurl(ITEMS);
-        uri = addParameters(uri, params);
-        HttpRequest request = get(uri);
-
-        HttpResponse.BodyHandler<ItemsWrapper> handler = new JsonBodyHandler<>(ItemsWrapper.class);
-        return getRequestWrapped(request, handler);
-    }
-
     @SneakyThrows
     public ItemsWrapper getItems(HashMap<String, String> params) {
 
@@ -89,6 +79,7 @@ public class ItemsAPI extends WalmartSDK {
                 .concat(QUESTION_MARK_CHARACTER));
         uri = addParameters(uri, params);
         HttpRequest request = get(uri);
+        System.out.println("request = " + request);
 
         HttpResponse.BodyHandler<SearchWrapper> handler = new JsonBodyHandler<>(SearchWrapper.class);
         return getRequestWrapped(request, handler);
