@@ -79,6 +79,7 @@ public class ItemsAPI extends WalmartSDK {
                 .concat(QUESTION_MARK_CHARACTER));
         uri = addParameters(uri, params);
         HttpRequest request = get(uri);
+        System.out.println("request = " + request);
 
         HttpResponse.BodyHandler<SearchWrapper> handler = new JsonBodyHandler<>(SearchWrapper.class);
         return getRequestWrapped(request, handler);
