@@ -158,6 +158,19 @@ public class WalmartSDK {
                 .build();
     }
 
+    protected HttpRequest post(URI uri) {
+        refreshAccessToken();
+
+        return HttpRequest.newBuilder(uri)
+                .header(HEADER_WM_SEC_ACCESS_TOKEN, walmartCredentials.getAccessToken())
+                .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
+                .headers(CORRELATION_ID, UUID.randomUUID().toString())
+                .header(ACCEPT, CONTENT_TYPE_VALUE)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+    }
+
     private HttpRequest getHttpRequest(URI uri, String method, String requestBody) {
         refreshAccessToken();
         return HttpRequest.newBuilder(uri)
