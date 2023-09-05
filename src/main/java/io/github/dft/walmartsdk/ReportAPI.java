@@ -3,6 +3,7 @@ package io.github.dft.walmartsdk;
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.reportapi.Report;
+import io.github.dft.walmartsdk.reportapi.ReportRequest;
 import io.github.dft.walmartsdk.reportapi.ReportUrl;
 import io.github.dft.walmartsdk.reportapi.RequestWrapper;
 
@@ -42,12 +43,12 @@ public class ReportAPI extends WalmartSDK {
         return getRequestWrapped(request, handler);
     }
 
-    public Report getRequestStatus(String requestId) {
+    public ReportRequest getRequestStatus(String requestId) {
 
         URI uri = baseurl(REPORTS + SLASH_CHARACTER + REPORTSREQUESTS + SLASH_CHARACTER + requestId);
         HttpRequest request = get(uri);
 
-        HttpResponse.BodyHandler<Report> handler = new JsonBodyHandler<>(Report.class);
+        HttpResponse.BodyHandler<ReportRequest> handler = new JsonBodyHandler<>(ReportRequest.class);
         return getRequestWrapped(request, handler);
     }
 
