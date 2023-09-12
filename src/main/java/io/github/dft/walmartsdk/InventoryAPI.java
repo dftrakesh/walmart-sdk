@@ -71,4 +71,14 @@ public class InventoryAPI extends WalmartSDK {
         HttpResponse.BodyHandler<WFSInventory> handler = new JsonBodyHandler<>(WFSInventory.class);
         return getRequestWrapped(request, handler);
     }
+
+    public InventoryWrapper updateInventory(HashMap<String, String> params, InventoryWrapper inventoryWrapper) {
+
+        URI uri = baseurl(INVENTORY);
+        uri = addParameters(uri, params);
+        HttpRequest request = put(uri, getString(inventoryWrapper));
+
+        HttpResponse.BodyHandler<InventoryWrapper> handler = new JsonBodyHandler<>(InventoryWrapper.class);
+        return getRequestWrapped(request, handler);
+    }
 }

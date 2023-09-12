@@ -144,6 +144,19 @@ public class WalmartSDK {
         return getHttpRequest(uri, HTTP_METHOD_TYPE_PUT, jsonBody);
     }
 
+    protected HttpRequest put(URI uri, String jsonBody) {
+        refreshAccessToken();
+
+        return HttpRequest.newBuilder(uri)
+                .header(HEADER_WM_SEC_ACCESS_TOKEN, walmartCredentials.getAccessToken())
+                .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
+                .headers(CORRELATION_ID, UUID.randomUUID().toString())
+                .header(ACCEPT, CONTENT_TYPE_VALUE)
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+    }
+
     @SneakyThrows
     protected HttpRequest post(URI uri, String jsonBody) {
         refreshAccessToken();
