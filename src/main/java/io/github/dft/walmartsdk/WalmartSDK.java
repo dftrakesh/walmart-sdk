@@ -9,6 +9,10 @@ import io.github.dft.walmartsdk.model.common.RequestBody;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.SneakyThrows;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -77,9 +81,10 @@ public class WalmartSDK {
                                                                HttpResponse<T> resp, int count) {
 
         if (resp.statusCode() == TOO_MANY_REQUEST_EXCEPTION_CODE && count < MAX_ATTEMPTS) {
-            Thread.sleep(TIME_OUT_DURATION);
-            return client.sendAsync(request, handler)
-                    .thenComposeAsync(response -> tryResend(client, request, handler, response, count + 1));
+            long lLimitResetSeconds = resp.headers().firstValueAsLong("X-Next-Replenishment-Time").orElse(TIME_OUT_DURATION);
+            Thread.sleep(lLimitResetSeconds * 1000);
+            HttpResponse<T> response = client.send(request, handler);
+            return tryResend(client, request, handler, response, count + 1);
         }
         return CompletableFuture.completedFuture(resp);
     }
@@ -181,6 +186,31 @@ public class WalmartSDK {
                 .headers(CORRELATION_ID, UUID.randomUUID().toString())
                 .header(ACCEPT, CONTENT_TYPE_VALUE)
                 .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+    }
+
+    private static byte[] buildMultipartData(String boundary, byte[] jsonData, File jsonFile) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byteArrayOutputStream.write(("--" + boundary + "\r\n").getBytes());
+        byteArrayOutputStream.write(("Content-Disposition: form-data; name=\"json_file\"; filename=\"" + jsonFile.getName() + "\"" + "\r\n").getBytes());
+        byteArrayOutputStream.write(("Content-Type: application/json" + "\r\n" + "\r\n").getBytes());
+        byteArrayOutputStream.write(jsonData);
+        byteArrayOutputStream.write(("\r\n" + "--" + boundary + "--" + "\r\n").getBytes());
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    protected HttpRequest postMultipart(URI uri, final byte[] jsonData, final File jsonFile) throws IOException {
+        final String boundary = "---" + UUID.randomUUID();
+        final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofByteArray(buildMultipartData(boundary, jsonData, jsonFile));
+        refreshAccessToken();
+
+        return HttpRequest.newBuilder(uri)
+                .header(HEADER_WM_SEC_ACCESS_TOKEN, walmartCredentials.getAccessToken())
+                .header(CONTENT_TYPE, "multipart/form-data; boundary=" + "Boundary-" + UUID.randomUUID())
+                .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
+                .headers(CORRELATION_ID, UUID.randomUUID().toString())
+                .header(ACCEPT, CONTENT_TYPE_VALUE)
+                .POST(body)
                 .build();
     }
 

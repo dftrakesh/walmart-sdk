@@ -8,9 +8,12 @@ import io.github.dft.walmartsdk.model.inventoryapi.SingleItemInventory;
 import io.github.dft.walmartsdk.model.inventoryapi.WFSInventory;
 import lombok.SneakyThrows;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.util.HashMap;
 
 public class InventoryAPI extends WalmartSDK {
@@ -19,6 +22,7 @@ public class InventoryAPI extends WalmartSDK {
     private static final String SLASH_CHARACTER = "/";
     private static final String INVENTORIES = "inventories";
     private static final String QUESTION_MARK_CHARACTER = "?";
+    private static final String FEEDS = "feeds";
 
     public InventoryAPI(WalmartCredentials walmartCredentials) {
         super(walmartCredentials);
@@ -77,6 +81,17 @@ public class InventoryAPI extends WalmartSDK {
         URI uri = baseurl(INVENTORY);
         uri = addParameters(uri, params);
         HttpRequest request = put(uri, getString(inventoryWrapper));
+
+        HttpResponse.BodyHandler<InventoryWrapper> handler = new JsonBodyHandler<>(InventoryWrapper.class);
+        return getRequestWrapped(request, handler);
+    }
+    public InventoryWrapper bulkItemInventoryUpdate(HashMap<String, String> params, String jsonFilePath) throws IOException {
+
+        URI uri = baseurl(FEEDS);
+        uri = addParameters(uri, params);
+        File jsonFile = new File(jsonFilePath);
+        byte[] jsonData = Files.readAllBytes(jsonFile.toPath());
+        HttpRequest request = postMultipart(uri, jsonData, jsonFile);
 
         HttpResponse.BodyHandler<InventoryWrapper> handler = new JsonBodyHandler<>(InventoryWrapper.class);
         return getRequestWrapped(request, handler);
