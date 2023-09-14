@@ -85,13 +85,13 @@ public class InventoryAPI extends WalmartSDK {
         HttpResponse.BodyHandler<InventoryWrapper> handler = new JsonBodyHandler<>(InventoryWrapper.class);
         return getRequestWrapped(request, handler);
     }
-    public InventoryWrapper bulkItemInventoryUpdate(HashMap<String, String> params, String jsonFilePath) throws IOException {
+
+    public InventoryWrapper bulkItemInventoryUpdate(HashMap<String, String> params, String jsonFilePath){
 
         URI uri = baseurl(FEEDS);
         uri = addParameters(uri, params);
         File jsonFile = new File(jsonFilePath);
-        byte[] jsonData = Files.readAllBytes(jsonFile.toPath());
-        HttpRequest request = postMultipart(uri, jsonData, jsonFile);
+        HttpRequest request = postMultipart(uri, jsonFile);
 
         HttpResponse.BodyHandler<InventoryWrapper> handler = new JsonBodyHandler<>(InventoryWrapper.class);
         return getRequestWrapped(request, handler);
