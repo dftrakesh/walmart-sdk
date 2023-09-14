@@ -86,7 +86,7 @@ public class InventoryAPI extends WalmartSDK {
         return getRequestWrapped(request, handler);
     }
 
-    public InventoryWrapper bulkItemInventoryUpdate(HashMap<String, String> params, String jsonFilePath){
+    public InventoryWrapper bulkItemInventoryUpdate(HashMap<String, String> params, String jsonFilePath) {
 
         URI uri = baseurl(FEEDS);
         uri = addParameters(uri, params);

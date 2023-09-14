@@ -203,6 +203,7 @@ public class WalmartSDK {
 
     @SneakyThrows
     private static byte[] buildMultipartData(File jsonFile) {
+
         final String boundary = "---" + UUID.randomUUID();
         byte[] jsonData = Files.readAllBytes(jsonFile.toPath());
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
