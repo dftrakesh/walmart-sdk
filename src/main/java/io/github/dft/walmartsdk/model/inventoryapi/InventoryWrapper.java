@@ -15,4 +15,5 @@ public class InventoryWrapper {
     private String sku;
     private Quantity quantity;
     private List<Error> error;
+    private String feedId;
 }

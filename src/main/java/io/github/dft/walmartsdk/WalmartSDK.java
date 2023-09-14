@@ -3,17 +3,22 @@ package io.github.dft.walmartsdk;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
-import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.authenticationapi.AccessTokenResponse;
+import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
 import io.github.dft.walmartsdk.model.common.RequestBody;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.SneakyThrows;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +58,9 @@ public class WalmartSDK {
     private static final String CORRELATION_ID_VALUE = "b3261d2d-028a-4ef7-8602-633c23200af5";
     private static final String API_BASE_END_POINT = "https://marketplace.walmartapis.com/v3";
     private static final String WALMART_TOKEN_ENDPOINT = "https://marketplace.walmartapis.com/v3/token";
+    private static final String X_NEXT_REPLENISHMENT_TIME = "X-Next-Replenishment-Time";
+    private static final String BOUNDARY = "Boundary-";
+    private static final String VALUE = "multipart/form-data; boundary=";
 
     @SneakyThrows
     public WalmartSDK(WalmartCredentials walmartCredentials) {
@@ -77,9 +85,18 @@ public class WalmartSDK {
                                                                HttpResponse<T> resp, int count) {
 
         if (resp.statusCode() == TOO_MANY_REQUEST_EXCEPTION_CODE && count < MAX_ATTEMPTS) {
-            Thread.sleep(TIME_OUT_DURATION);
-            return client.sendAsync(request, handler)
-                    .thenComposeAsync(response -> tryResend(client, request, handler, response, count + 1));
+            long timeInMillis = LocalDateTime.now()
+                                             .atZone(ZoneId.systemDefault())
+                                             .toInstant()
+                                             .toEpochMilli();
+
+            long lLimitResetSeconds = resp.headers()
+                    .firstValueAsLong(X_NEXT_REPLENISHMENT_TIME)
+                    .orElse(TIME_OUT_DURATION);
+
+            Thread.sleep((lLimitResetSeconds - timeInMillis) + 2000);
+            HttpResponse<T> response = client.send(request, handler);
+            return tryResend(client, request, handler, response, count + 1);
         }
         return CompletableFuture.completedFuture(resp);
     }
@@ -182,6 +199,36 @@ public class WalmartSDK {
                 .header(ACCEPT, CONTENT_TYPE_VALUE)
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
+    }
+
+    @SneakyThrows
+    private static byte[] buildMultipartData(File jsonFile) {
+
+        final String boundary = "---" + UUID.randomUUID();
+        byte[] jsonData = Files.readAllBytes(jsonFile.toPath());
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byteArrayOutputStream.write(("--" + boundary + "\r\n").getBytes());
+        byteArrayOutputStream.write(("Content-Disposition: form-data; name=\"json_file\"; filename=\"" + jsonFile.getName() + "\"" + "\r\n").getBytes());
+        byteArrayOutputStream.write(("Content-Type: application/json" + "\r\n" + "\r\n").getBytes());
+        byteArrayOutputStream.write(jsonData);
+        byteArrayOutputStream.write(("\r\n" + "--" + boundary + "--" + "\r\n").getBytes());
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    protected HttpRequest postMultipart(URI uri, final File jsonFile) {
+        String boundary = BOUNDARY + UUID.randomUUID();
+        final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers
+                                                          .ofByteArray(buildMultipartData(jsonFile));
+        refreshAccessToken();
+
+        return HttpRequest.newBuilder(uri)
+                          .header(HEADER_WM_SEC_ACCESS_TOKEN, walmartCredentials.getAccessToken())
+                          .header(CONTENT_TYPE, VALUE + boundary)
+                          .headers(SERVICE_NAME, SERVICE_NAME_VALUE)
+                          .headers(CORRELATION_ID, UUID.randomUUID().toString())
+                          .header(ACCEPT, CONTENT_TYPE_VALUE)
+                          .POST(body)
+                          .build();
     }
 
     private HttpRequest getHttpRequest(URI uri, String method, String requestBody) {
