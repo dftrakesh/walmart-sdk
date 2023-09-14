@@ -9,11 +9,9 @@ import io.github.dft.walmartsdk.model.inventoryapi.WFSInventory;
 import lombok.SneakyThrows;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
 import java.util.HashMap;
 
 public class InventoryAPI extends WalmartSDK {
