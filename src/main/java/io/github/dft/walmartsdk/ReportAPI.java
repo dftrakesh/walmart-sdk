@@ -2,10 +2,7 @@ package io.github.dft.walmartsdk;
 
 import io.github.dft.walmartsdk.handler.JsonBodyHandler;
 import io.github.dft.walmartsdk.model.authenticationapi.WalmartCredentials;
-import io.github.dft.walmartsdk.reportapi.Report;
-import io.github.dft.walmartsdk.reportapi.ReportRequest;
-import io.github.dft.walmartsdk.reportapi.ReportUrl;
-import io.github.dft.walmartsdk.reportapi.RequestWrapper;
+import io.github.dft.walmartsdk.reportapi.*;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -18,6 +15,8 @@ public class ReportAPI extends WalmartSDK {
     private static final String REPORTSREQUESTS = "reportRequests";
     private static final String DOWNLOADREPORT = "downloadReport";
     private static final String SLASH_CHARACTER = "/";
+    private static final String AVAILABLE_RECON_FILES = "report/reconreport/availableReconFiles";
+    private static final String RECON_FILE_REPORT = "report/reconreport/reconFileJson";
 
     public ReportAPI(WalmartCredentials walmartCredentials) {
         super(walmartCredentials);
@@ -59,6 +58,25 @@ public class ReportAPI extends WalmartSDK {
         HttpRequest request = get(uri);
 
         HttpResponse.BodyHandler<ReportUrl> handler = new JsonBodyHandler<>(ReportUrl.class);
+        return getRequestWrapped(request, handler);
+    }
+
+    public PaymentReportDates getAvailableReconReportDates() {
+
+        URI uri = baseurl(AVAILABLE_RECON_FILES);
+        HttpRequest request = get(uri);
+
+        HttpResponse.BodyHandler<PaymentReportDates> handler = new JsonBodyHandler<>(PaymentReportDates.class);
+        return getRequestWrapped(request, handler);
+    }
+
+    public PaymentReconReportResponse getReconFileJson(HashMap<String, String> params) {
+
+        URI uri = baseurl(RECON_FILE_REPORT);
+        uri = addParameters(uri, params);
+        HttpRequest request = get(uri);
+
+        HttpResponse.BodyHandler<PaymentReconReportResponse> handler = new JsonBodyHandler<>(PaymentReconReportResponse.class);
         return getRequestWrapped(request, handler);
     }
 }
