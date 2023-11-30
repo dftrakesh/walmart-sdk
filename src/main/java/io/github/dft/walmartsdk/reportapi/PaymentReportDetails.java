@@ -71,7 +71,7 @@ public class PaymentReportDetails {
     @JsonProperty("Customer Order #")
     private String customerOrder;
 
-    @JsonProperty("Purchase Order")
+    @JsonProperty("Purchase Order #")
     private String purchaseOrder;
 
     @JsonProperty("Product Type")
